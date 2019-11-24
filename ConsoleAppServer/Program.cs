@@ -30,10 +30,12 @@ namespace ConsoleAppServer
                 .AddCommandLine(args)
                 .Build();
 
-            string file = "localhost.cer"; // Contains name of certificate file
+            //string file = "localhost.cer"; // Contains name of certificate file
+            //var cert = new X509Certificate2(X509Certificate.CreateFromCertFile(file));
+
             X509Store store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadWrite);
-            var cert = new X509Certificate2(X509Certificate.CreateFromCertFile(file));
+            var cert = ImportPfx();
             store.Add(cert);
             store.Close();
             return WebHost.CreateDefaultBuilder(args)
@@ -65,6 +67,17 @@ namespace ConsoleAppServer
                     //app.Run(context =>
                     //    context.Response.WriteAsync("Hello, World!"));
                 });
+        }
+
+        private static X509Certificate2 ImportPfx()
+        {
+            string certPath = "certificate.p12";
+            string certPass = "tester123";
+
+            // Create a collection object and populate it using the PFX file
+            X509Certificate2Collection collection = new X509Certificate2Collection();
+            collection.Import(certPath, certPass, X509KeyStorageFlags.PersistKeySet);
+            return collection[0];
         }
 
         private static void ServeHomePage(IApplicationBuilder app)
